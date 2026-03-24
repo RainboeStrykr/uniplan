@@ -2,7 +2,6 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navItems = [
-  { path: '/', icon: 'dashboard', label: 'Dashboard' },
   { path: '/inputs', icon: 'edit_note', label: 'Inputs' },
   { path: '/visualiser', icon: 'account_tree', label: 'Visualiser' },
   { path: '/results', icon: 'fact_check', label: 'Results' },
