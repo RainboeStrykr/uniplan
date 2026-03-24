@@ -1,0 +1,36 @@
+import urllib.request
+import json
+import traceback
+
+def post_csv(rtype, filename):
+    with open(filename, 'r', encoding='utf-8') as f:
+        content = f.read()
+    req = urllib.request.Request(
+        'http://127.0.0.1:8000/api/resources/upload', 
+        data=json.dumps({"resource_type": rtype, "csv_content": content}).encode('utf-8'),
+        headers={'Content-Type': 'application/json'}
+    )
+    with urllib.request.urlopen(req) as res:
+        print(f"Uploaded {rtype}:", res.status)
+
+def solve():
+    req = urllib.request.Request(
+        'http://127.0.0.1:8000/api/solve', 
+        data=json.dumps(["mrv", "mcv", "lcv"]).encode('utf-8'),
+        headers={'Content-Type': 'application/json'}
+    )
+    with urllib.request.urlopen(req) as res:
+        data = json.loads(res.read().decode('utf-8'))
+        if "error" in data:
+            print("ERROR:")
+            print(data["error"])
+        else:
+            print("SOLVE OK")
+
+try:
+    post_csv("courses", "demo_courses.csv")
+    post_csv("professors", "demo_professors.csv")
+    post_csv("rooms", "demo_rooms.csv")
+    solve()
+except Exception as e:
+    traceback.print_exc()
