@@ -123,7 +123,7 @@ UniPlan features an advanced 3D visualization system for understanding the CSP s
 
 ---
 
-## � User Guide
+## User Guide
 
 ### Getting Started
 1. **Navigate to Input Management**: Add courses, professors, rooms, and timeslots
@@ -148,16 +148,6 @@ The backend exposes a REST API at `http://127.0.0.1:8000`
 - `GET /api/visualization/state` - Get current solver state and step history
 - `GET /api/performance/metrics` - Retrieve solver performance metrics
 - `GET /api/timetable` - Get generated timetable results
-
----
-
-## �📝 Demo Data
-If you'd like to test the tool using CSVs, you will find three pre-formatted CSVs (`demo_courses.csv`, `demo_professors.csv`, and `demo_rooms.csv`) natively baked into the `/backend` folder. 
-
-1. Go to the "Input Management" tab.
-2. Select the specific resource tab (e.g., Courses).
-3. Drag and drop the corresponding CSV into the upload section.
-4. Watch the catalog populate instantly!
 
 ---
 
@@ -191,11 +181,3 @@ Contributions are welcome! Please feel free to submit a Pull Request. For major 
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-## 🔗 Links
-
-- **GitHub Repository**: https://github.com/RainboeStrykr/uniplan
-- **Live Demo**: [Deploy the app and add link here]
-- **API Documentation**: http://127.0.0.1:8000/docs (when backend is running)
