@@ -73,6 +73,8 @@ def upload_csv(upload: CSVUpload, store: Dict[str, Any] = Depends(get_store)):
             return {"error": "Invalid CSV for Professors. Missing 'unavailable_slots' column."}
         if rtype == "rooms" and "capacity" not in reader.fieldnames:
             return {"error": "Invalid CSV for Rooms. Missing 'capacity' column."}
+        if rtype == "student_groups" and "size" not in reader.fieldnames:
+            return {"error": "Invalid CSV for Student Groups. Missing 'size' column."}
 
         count = 0
         for row in reader:
@@ -87,14 +89,30 @@ def upload_csv(upload: CSVUpload, store: Dict[str, Any] = Depends(get_store)):
                     item["duration"] = float(item["duration"])
                 except ValueError:
                     item["duration"] = 1.0
+
+            if "capacity" in item:
+                try:
+                    item["capacity"] = int(item["capacity"])
+                except ValueError:
+                    item["capacity"] = 0
+
+            if "size" in item:
+                try:
+                    item["size"] = int(item["size"])
+                except ValueError:
+                    item["size"] = 0
                     
             if "unavailable_slots" in item:
-                val = item["unavailable_slots"].strip()
-                item["unavailable_slots"] = val.split(";") if val else []
+                val = item["unavailable_slots"].strip().strip('"')
+                item["unavailable_slots"] = [s.strip() for s in val.replace(";", ",").split(",") if s.strip()] if val else []
                 
             if "student_group_ids" in item:
-                val = item["student_group_ids"].strip()
-                item["student_group_ids"] = val.split(";") if val else []
+                val = item["student_group_ids"].strip().strip('"')
+                item["student_group_ids"] = [s.strip() for s in val.replace(";", ",").split(",") if s.strip()] if val else []
+
+            if "course_ids" in item:
+                val = item["course_ids"].strip().strip('"')
+                item["course_ids"] = [s.strip() for s in val.replace(";", ",").split(",") if s.strip()] if val else []
 
             store[rtype][item["id"]] = item
             count += 1
