@@ -7,8 +7,6 @@ export default function InputManagement() {
   const [resources, setResources] = useState({ courses: [], professors: [], rooms: [], time_slots: [], student_groups: [] });
   const [constraints, setConstraints] = useState([]);
   
-  // Form State
-  const [courseForm, setCourseForm] = useState({ id: '', name: '', duration: 1.0, type: 'Lecture', professor_id: 'P1', student_group_ids: ['G1'] });
   const [uploadMessage, setUploadMessage] = useState('');
   const [confirmClear, setConfirmClear] = useState(null); // 'tab' | 'all' | null
 
@@ -67,25 +65,6 @@ export default function InputManagement() {
     }
   };
 
-  const handleAddCourse = async (e) => {
-    e.preventDefault();
-    if (!courseForm.id || !courseForm.name) return;
-    
-    try {
-      await fetch('http://127.0.0.1:8000/api/resources/resources?resource_type=courses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            ...courseForm,
-            duration: parseFloat(courseForm.duration)
-        })
-      });
-      setCourseForm({ id: '', name: '', duration: 1.0, type: 'Lecture', professor_id: 'P1', student_group_ids: ['G1'] });
-      fetchResources(); // Refresh
-    } catch (err) {
-      console.error("Error adding course", err);
-    }
-  };
 
   const handleClear = async (type) => {
     try {
@@ -139,48 +118,7 @@ export default function InputManagement() {
             </div>
 
             <div className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 xl:col-span-4 bg-surface-container-low p-6 rounded-xl border border-white/5">
-                <h4 className="font-headline font-bold mb-4 flex items-center gap-2 text-slate-100">
-                  <span className="material-symbols-outlined text-blue-400">add_circle</span> Manual Entry
-                </h4>
-                {activeTab === 'courses' && (
-                  <form onSubmit={handleAddCourse} className="space-y-4">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Course Code</label>
-                      <input value={courseForm.id} onChange={(e)=>setCourseForm({...courseForm, id: e.target.value})} className="w-full bg-slate-900 border border-white/10 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500/20 text-slate-100 focus:border-blue-500/50" placeholder="e.g. CS101" type="text" required/>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Course Name</label>
-                      <input value={courseForm.name} onChange={(e)=>setCourseForm({...courseForm, name: e.target.value})} className="w-full bg-slate-900 border border-white/10 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500/20 text-slate-100 focus:border-blue-500/50" placeholder="Introduction to Alg..." type="text" required/>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Duration (Hrs)</label>
-                        <select value={courseForm.duration} onChange={(e)=>setCourseForm({...courseForm, duration: e.target.value})} className="w-full bg-slate-900 border border-white/10 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500/20 text-slate-100 focus:border-blue-500/50">
-                          <option value="1.0">1.0</option>
-                          <option value="1.5">1.5</option>
-                          <option value="2.0">2.0</option>
-                          <option value="3.0">3.0</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Room Type</label>
-                        <select value={courseForm.type} onChange={(e)=>setCourseForm({...courseForm, type: e.target.value})} className="w-full bg-slate-900 border border-white/10 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500/20 text-slate-100 focus:border-blue-500/50">
-                          <option value="Lecture">Lecture</option>
-                          <option value="Lab">Lab</option>
-                         <option value="Seminar">Seminar</option>
-                        </select>
-                      </div>
-                    </div>
-                    <button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl mt-4 hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">Register Course</button>
-                  </form>
-                )}
-                {activeTab !== 'courses' && (
-                  <div className="text-sm text-slate-500 italic py-4">Use CSV import for {activeTab}.</div>
-                )}
-              </div>
-
-              <div className="col-span-12 xl:col-span-8 bg-surface-container-low p-6 rounded-xl border border-white/5">
+              <div className="col-span-12 bg-surface-container-low p-6 rounded-xl border border-white/5">
                 <div className="flex justify-between items-center mb-6">
                   <h4 className="font-headline font-bold text-slate-100">Active Catalog</h4>
                   <div className="flex gap-2">
