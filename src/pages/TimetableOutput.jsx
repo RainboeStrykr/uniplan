@@ -26,25 +26,30 @@ export default function TimetableOutput() {
     } catch {}
   };
 
-  // Map backend days to columns
+  // Grid constants
+  const HOUR_START = 8;   // 08:00
+  const HOUR_END = 18;    // up to 18:00
+  const TOTAL_HOURS = HOUR_END - HOUR_START; // 10
+  const GRID_HOURS = Array.from({ length: TOTAL_HOURS }, (_, i) => `${String(HOUR_START + i).padStart(2, '0')}:00`);
+
   const dayColMap = {
-    'Monday': 1,
-    'Tuesday': 2,
-    'Wednesday': 3,
-    'Thursday': 4,
-    'Friday': 5
+    'Monday': 0,
+    'Tuesday': 1,
+    'Wednesday': 2,
+    'Thursday': 3,
+    'Friday': 4,
   };
 
-  // Map backend time to rows (assumes 08:00 is row 1, 09:00 is row 2, etc.)
-  const getRowStart = (timeStr) => {
-    if (!timeStr) return 1;
-    const hour = parseInt(timeStr.split(':')[0], 10);
-    return Math.max(1, hour - 7); // 08:00 = 1
+  const getTopPercent = (timeStr) => {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':').map(Number);
+    const offsetHours = (h + m / 60) - HOUR_START;
+    return (offsetHours / TOTAL_HOURS) * 100;
   };
-  
-  const getRowSpan = (duration) => {
-      // Assuming duration is in hours
-      return Math.round(duration);
+
+  const getHeightPercent = (duration) => {
+    const hrs = parseFloat(duration) || 1;
+    return (hrs / TOTAL_HOURS) * 100;
   };
 
   const qualityScore = metrics && metrics.nodes_expanded > 0 ? 100 : 0;
@@ -73,87 +78,96 @@ export default function TimetableOutput() {
               </div>
               
               <div className="relative grid grid-cols-[80px_repeat(5,1fr)] overflow-x-auto min-w-[700px]">
+                {/* Day headers */}
                 <div className="h-12 bg-slate-900 border-b border-slate-800"></div>
                 {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(d => (
                    <div key={d} className="h-12 bg-slate-900 flex items-center justify-center border-l border-slate-800 border-b border-slate-800 font-manrope font-bold text-xs uppercase tracking-widest text-slate-500">{d}</div>
                 ))}
 
-                <div className="col-span-6 grid grid-cols-[80px_repeat(5,1fr)] h-[600px] relative">
-                  {/* Grid Lines */}
-                  <div className="absolute inset-0 grid grid-rows-[repeat(11,1fr)]">
-                    {[...Array(11)].map((_, i) => <div key={i} className="border-b border-slate-800/50"></div>)}
-                  </div>
-                  <div className="absolute inset-0 grid grid-cols-[80px_repeat(5,1fr)]">
-                    <div className="border-r border-slate-800/50"></div>
-                    {[...Array(5)].map((_, i) => <div key={i} className="border-r border-slate-800/50"></div>)}
-                  </div>
+                {/* Body */}
+                <div className="col-span-6 grid grid-cols-[80px_repeat(5,1fr)] relative" style={{ height: `${TOTAL_HOURS * 60}px` }}>
+                  {/* Horizontal hour lines */}
+                  {GRID_HOURS.map((_, i) => (
+                    <div key={i} className="absolute w-full border-t border-slate-800/60" style={{ top: `${(i / TOTAL_HOURS) * 100}%` }} />
+                  ))}
+                  {/* Vertical day dividers */}
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} className="absolute top-0 bottom-0 border-l border-slate-800/60"
+                      style={{ left: `calc(80px + (100% - 80px) * ${(i) * 0.2})` }} />
+                  ))}
 
-                  {/* Time Labels */}
-                  <div className="col-start-1 grid grid-rows-[repeat(11,1fr)] py-2">
-                    {['08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'].map(t => (
-                       <span key={t} className="text-[10px] font-bold text-slate-500 flex items-start justify-center pr-2">{t}</span>
-                    ))}
-                  </div>
+                  {/* Time labels */}
+                  {GRID_HOURS.map((t, i) => (
+                    <span key={t} className="absolute text-[10px] font-bold text-slate-500 w-[72px] text-right pr-3 leading-none"
+                      style={{ top: `calc(${(i / TOTAL_HOURS) * 100}% - 6px)` }}>
+                      {t}
+                    </span>
+                  ))}
 
-                  {/* Render Timetable Blocks */}
+                  {/* Timetable blocks */}
                   {(() => {
-                      // Pre-process overlaps to split column widths for simultaneous classes
-                      const timeGroups = {};
-                      timetable.forEach(item => {
-                          const key = `${item.time_slot?.day}-${item.time_slot?.start_time}`;
-                          if (!timeGroups[key]) timeGroups[key] = [];
-                          timeGroups[key].push(item);
-                      });
+                    // Group by day+time to detect true overlaps
+                    const timeGroups = {};
+                    timetable.forEach(item => {
+                      const key = `${item.time_slot?.day}-${item.time_slot?.start_time}`;
+                      if (!timeGroups[key]) timeGroups[key] = [];
+                      timeGroups[key].push(item);
+                    });
 
-                      return timetable.map((item, idx) => {
-                         const key = `${item.time_slot?.day}-${item.time_slot?.start_time}`;
-                         const group = timeGroups[key];
-                         const overlapCount = group.length;
-                         const overlapIndex = group.findIndex(g => g.session_id === item.session_id);
+                    const colors = [
+                      'border-blue-500 bg-blue-500/10 text-blue-100',
+                      'border-amber-500 bg-amber-500/10 text-amber-100',
+                      'border-cyan-500 bg-cyan-500/10 text-cyan-100',
+                      'border-purple-500 bg-purple-500/10 text-purple-100',
+                      'border-emerald-500 bg-emerald-500/10 text-emerald-100',
+                    ];
 
-                         const col = dayColMap[item.time_slot?.day] || 1;
-                         const rowStart = getRowStart(item.time_slot?.start_time);
-                         const span = getRowSpan(item.course?.duration || 1);
-                         
-                         // Calculate top and height percentages based on 11 rows (11 hours)
-                         const topPercent = ((rowStart - 1) / 10) * 100;
-                         const heightPercent = (span / 10) * 100;
-                         
-                         // Cycle distinct colors
-                         const colors = [
-                             'bg-blue-500/10 border-blue-500 text-blue-100',
-                             'bg-amber-500/10 border-amber-500 text-amber-100',
-                             'bg-cyan-500/10 border-cyan-500 text-cyan-100',
-                             'bg-purple-500/10 border-purple-500 text-purple-100',
-                             'bg-emerald-500/10 border-emerald-500 text-emerald-100'
-                         ];
-                         const colorCls = colors[idx % colors.length];
+                    return timetable.map((item, idx) => {
+                      const day = item.time_slot?.day;
+                      const colIndex = dayColMap[day]; // 0-based
+                      if (colIndex === undefined || !item.time_slot?.start_time) return null;
 
-                         return (
-                             <div key={item.session_id} 
-                                  className="absolute z-10 p-1"
-                                  style={{
-                                      top: `${topPercent}%`, 
-                                      height: `${heightPercent}%`,
-                                      left: `calc(80px + (100% - 80px) * ${(col - 1) * 0.2} + ((100% - 80px) * 0.2 / ${overlapCount}) * ${overlapIndex})`,
-                                      width: `calc((100% - 80px) * 0.2 / ${overlapCount})`
-                                  }}>
-                                <div className={`border-l-4 h-full rounded-lg p-2 shadow-sm ${colorCls} overflow-hidden hover:brightness-125 transition-all text-ellipsis`}>
-                                    <h4 className="text-[11px] font-manrope font-bold leading-tight">{item.course?.name} ({item.course?.id})</h4>
-                                    <p className="text-[9px] font-medium mt-1 opacity-80">{item.professor?.name}</p>
-                                    <p className="text-[9px] font-medium opacity-80">{item.room?.name}</p>
-                                </div>
-                             </div>
-                         );
-                      });
+                      const key = `${day}-${item.time_slot.start_time}`;
+                      const group = timeGroups[key];
+                      const overlapCount = group.length;
+                      const overlapIndex = group.findIndex(g => g.session_id === item.session_id);
+
+                      const topPct = getTopPercent(item.time_slot.start_time);
+                      const heightPct = getHeightPercent(item.course?.duration);
+                      const colorCls = colors[idx % colors.length];
+
+                      // Each day column occupies (100% - 80px) / 5 of width
+                      // Within that column, split by overlap
+                      const colWidthExpr = `(100% - 80px) / 5`;
+                      const leftExpr = `80px + ${colIndex} * (${colWidthExpr}) + ${overlapIndex} * (${colWidthExpr}) / ${overlapCount}`;
+                      const widthExpr = `(${colWidthExpr}) / ${overlapCount}`;
+
+                      return (
+                        <div key={item.session_id}
+                          className="absolute z-10 px-0.5"
+                          style={{
+                            top: `${topPct}%`,
+                            height: `${heightPct}%`,
+                            left: `calc(${leftExpr})`,
+                            width: `calc(${widthExpr})`,
+                          }}>
+                          <div className={`border-l-4 h-full rounded-lg p-2 overflow-hidden hover:brightness-125 transition-all ${colorCls}`}>
+                            <p className="text-[11px] font-bold leading-tight truncate">{item.course?.name}</p>
+                            <p className="text-[10px] font-bold text-slate-400 truncate">{item.course?.id}</p>
+                            <p className="text-[9px] mt-1 opacity-70 truncate">{item.professor?.name}</p>
+                            <p className="text-[9px] opacity-70 truncate">{item.room?.name}</p>
+                          </div>
+                        </div>
+                      );
+                    });
                   })()}
-                  
+
                   {timetable.length === 0 && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 font-bold z-0">
-                          <span className="material-symbols-outlined text-4xl mb-2 text-slate-600">block</span>
-                          <p>No valid schedule could be generated.</p>
-                          <p className="font-normal text-xs text-slate-400 mt-1">Please check your constraints, ensure CSVs are correct, and re-run the algorithm.</p>
-                      </div>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-500 font-bold z-0">
+                      <span className="material-symbols-outlined text-4xl mb-2 text-slate-600">block</span>
+                      <p>No valid schedule could be generated.</p>
+                      <p className="font-normal text-xs text-slate-400 mt-1">Please check your constraints, ensure CSVs are correct, and re-run the algorithm.</p>
+                    </div>
                   )}
                 </div>
               </div>

@@ -40,6 +40,21 @@ class CSVUpload(BaseModel):
     resource_type: str
     csv_content: str
 
+@router.delete("/resources")
+def clear_resources(resource_type: str, store: Dict[str, Any] = Depends(get_store)):
+    clearable = ["courses", "professors", "rooms", "time_slots", "student_groups"]
+    if resource_type == "all":
+        for key in clearable:
+            store[key] = {}
+        store["latest_solution"] = None
+        store["latest_metrics"] = None
+        store["latest_steps"] = []
+        return {"message": "All resources cleared."}
+    if resource_type not in clearable:
+        return {"error": "Invalid resource type"}
+    store[resource_type] = {}
+    return {"message": f"Cleared all {resource_type}."}
+
 @router.post("/upload")
 def upload_csv(upload: CSVUpload, store: Dict[str, Any] = Depends(get_store)):
     rtype = upload.resource_type

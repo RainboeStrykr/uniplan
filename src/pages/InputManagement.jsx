@@ -10,6 +10,7 @@ export default function InputManagement() {
   // Form State
   const [courseForm, setCourseForm] = useState({ id: '', name: '', duration: 1.0, type: 'Lecture', professor_id: 'P1', student_group_ids: ['G1'] });
   const [uploadMessage, setUploadMessage] = useState('');
+  const [confirmClear, setConfirmClear] = useState(null); // 'tab' | 'all' | null
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -83,6 +84,20 @@ export default function InputManagement() {
       fetchResources(); // Refresh
     } catch (err) {
       console.error("Error adding course", err);
+    }
+  };
+
+  const handleClear = async (type) => {
+    try {
+      await fetch(`http://127.0.0.1:8000/api/resources/resources?resource_type=${type}`, {
+        method: 'DELETE',
+      });
+      setUploadMessage(type === 'all' ? 'All data cleared.' : `${type} cleared.`);
+      fetchResources();
+    } catch (err) {
+      console.error("Error clearing data", err);
+    } finally {
+      setConfirmClear(null);
     }
   };
 
@@ -166,7 +181,22 @@ export default function InputManagement() {
                 <div className="flex justify-between items-center mb-6">
                   <h4 className="font-headline font-bold text-slate-100">Active Catalog</h4>
                   <div className="flex gap-2">
-                    <button className="p-2 bg-slate-900 border border-white/10 rounded-lg text-slate-400 hover:text-blue-400 transition-colors"><span className="material-symbols-outlined text-sm">filter_list</span></button>
+                    {confirmClear === 'tab' ? (
+                      <div className="flex items-center gap-2 bg-red-950/50 border border-red-800/50 rounded-lg px-3 py-1.5">
+                        <span className="text-xs text-red-300 font-medium">Clear all {activeTab}?</span>
+                        <button onClick={() => handleClear(activeTab)} className="text-xs font-bold text-red-400 hover:text-red-300 transition-colors">Yes</button>
+                        <span className="text-red-800">|</span>
+                        <button onClick={() => setConfirmClear(null)} className="text-xs font-bold text-slate-400 hover:text-slate-300 transition-colors">No</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmClear('tab')}
+                        disabled={resources[activeTab]?.length === 0}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 border border-white/10 rounded-lg text-slate-400 hover:text-red-400 hover:border-red-900/50 transition-colors text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed">
+                        <span className="material-symbols-outlined text-sm">delete_sweep</span>
+                        Clear {activeTab}
+                      </button>
+                    )}
                   </div>
                 </div>
                 
@@ -279,8 +309,32 @@ export default function InputManagement() {
             </div>
           </div>
 
-          <div className="bg-blue-600 text-white p-6 rounded-xl relative overflow-hidden group shadow-xl shadow-blue-900/20">
-            <div className="relative z-10">
+          {confirmClear === 'all' ? (
+            <div className="bg-red-950/40 border border-red-800/50 p-5 rounded-xl space-y-3">
+              <div className="flex items-center gap-2 text-red-400">
+                <span className="material-symbols-outlined text-lg">warning</span>
+                <span className="font-bold text-sm">Clear everything?</span>
+              </div>
+              <p className="text-xs text-slate-400">This removes all courses, professors, rooms, time slots and student groups from the server.</p>
+              <div className="flex gap-2">
+                <button onClick={() => handleClear('all')} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded-lg text-sm transition-colors">
+                  Yes, clear all
+                </button>
+                <button onClick={() => setConfirmClear(null)} className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-lg text-sm transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmClear('all')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 border border-white/10 rounded-xl text-slate-400 hover:text-red-400 hover:border-red-900/50 transition-colors text-sm font-bold">
+              <span className="material-symbols-outlined text-lg">delete_forever</span>
+              Clear All Data
+            </button>
+          )}
+
+          <div className="bg-blue-600 text-white p-6 rounded-xl relative overflow-hidden group shadow-xl shadow-blue-900/20">            <div className="relative z-10">
               <h4 className="font-headline font-bold mb-2">Ready to Build?</h4>
               <p className="text-blue-100 text-xs mb-4">All inputs are synchronized. You can now proceed to the engine to generate the first draft.</p>
               <Link to="/visualiser" className="block text-center w-full bg-white text-blue-700 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-50 transition-colors">
