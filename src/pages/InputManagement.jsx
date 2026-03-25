@@ -134,9 +134,6 @@ export default function InputManagement() {
                 onClick={() => setActiveTab('rooms')}
                 className={`px-6 py-2 font-bold transition-colors ${activeTab === 'rooms' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-400 hover:text-blue-400'}`}>Rooms</button>
               <button 
-                onClick={() => setActiveTab('time_slots')}
-                className={`px-6 py-2 font-bold transition-colors ${activeTab === 'time_slots' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-400 hover:text-blue-400'}`}>Time Slots</button>
-              <button 
                 onClick={() => setActiveTab('student_groups')}
                 className={`px-6 py-2 font-bold transition-colors ${activeTab === 'student_groups' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-400 hover:text-blue-400'}`}>Student Groups</button>
             </div>
@@ -233,14 +230,6 @@ export default function InputManagement() {
                             <th className="px-4 pb-2">Type</th>
                           </>
                         )}
-                        {activeTab === 'time_slots' && (
-                          <>
-                            <th className="px-4 pb-2">Slot ID</th>
-                            <th className="px-4 pb-2">Day</th>
-                            <th className="px-4 pb-2">Start</th>
-                            <th className="px-4 pb-2">End</th>
-                          </>
-                        )}
                         {activeTab === 'student_groups' && (
                           <>
                             <th className="px-4 pb-2">Group ID</th>
@@ -276,14 +265,6 @@ export default function InputManagement() {
                           <td className="px-4 py-4 rounded-r-xl">
                              <span className="px-3 py-1 bg-amber-900/30 text-amber-400 border border-amber-900/50 text-[10px] font-bold rounded-full uppercase">{r.type}</span>
                           </td>
-                        </tr>
-                      ))}
-                      {activeTab === 'time_slots' && resources.time_slots.map(ts => (
-                        <tr key={ts.id} className="bg-slate-900/50 border border-white/5 hover:bg-slate-900 transition-colors group">
-                          <td className="px-4 py-4 font-bold text-blue-300 rounded-l-xl">{ts.id}</td>
-                          <td className="px-4 py-4 text-slate-300">{ts.day}</td>
-                          <td className="px-4 py-4 text-slate-400">{ts.start_time}</td>
-                          <td className="px-4 py-4 text-slate-400 rounded-r-xl">{ts.end_time}</td>
                         </tr>
                       ))}
                       {activeTab === 'student_groups' && resources.student_groups.map(sg => (
