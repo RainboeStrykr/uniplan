@@ -52,6 +52,30 @@ export default function TimetableOutput() {
     return (hrs / TOTAL_HOURS) * 100;
   };
 
+  const handleExport = () => {
+    if (!timetable.length) return;
+    const rows = [['Course ID', 'Course Name', 'Professor', 'Room', 'Day', 'Start Time', 'End Time']];
+    timetable.forEach(item => {
+      rows.push([
+        item.course?.id ?? '',
+        item.course?.name ?? '',
+        item.professor?.name ?? '',
+        item.room?.name ?? '',
+        item.time_slot?.day ?? '',
+        item.time_slot?.start_time ?? '',
+        item.time_slot?.end_time ?? '',
+      ]);
+    });
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'timetable.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const qualityScore = metrics && metrics.nodes_expanded > 0 ? 100 : 0;
 
   return (
@@ -64,7 +88,7 @@ export default function TimetableOutput() {
             <p className="text-slate-400 font-body">Viewing latest generated optimal schedule.</p>
           </div>
           <div className="flex items-center gap-3">
-            <button className="bg-slate-800 text-slate-200 border border-slate-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-slate-700 transition-all">
+            <button onClick={handleExport} disabled={!timetable.length} className="bg-slate-800 text-slate-200 border border-slate-700 px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2 hover:bg-slate-700 transition-all disabled:opacity-40 disabled:cursor-not-allowed">
               <span className="material-symbols-outlined text-[18px]">file_download</span> Export
             </button>
           </div>
