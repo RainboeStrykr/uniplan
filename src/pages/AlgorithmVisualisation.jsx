@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/Layout';
+import CSP3DVisualization from '../components/CSP3DVisualization';
 
 export default function AlgorithmVisualisation() {
   const [steps, setSteps] = useState([]);
@@ -7,6 +8,7 @@ export default function AlgorithmVisualisation() {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSolving, setIsSolving] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(false);
   
   const timerRef = useRef(null);
 
@@ -80,6 +82,12 @@ export default function AlgorithmVisualisation() {
                     <span className="text-blue-400 font-bold animate-pulse text-sm">Engine Running...</span>
                 ) : (
                     <>
+                        <button 
+                          onClick={() => setIs3DMode(!is3DMode)} 
+                          className="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold hover:bg-purple-500 text-sm"
+                        >
+                          {is3DMode ? '2D View' : '3D View'}
+                        </button>
                         <button onClick={() => setIsPlaying(!isPlaying)} disabled={steps.length === 0} className="px-4 py-2 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-700 disabled:opacity-50 text-sm">
                             {isPlaying ? 'Pause Playback' : (steps.length > 0 ? 'Resume Playback' : 'Waiting')}
                         </button>
@@ -92,32 +100,44 @@ export default function AlgorithmVisualisation() {
             </div>
 
             <div className="flex-1 relative p-8 flex items-center justify-center">
-              {/* Dynamic abstract grid visualization */}
-              <div className="w-full h-full flex items-center justify-center relative overflow-hidden bg-slate-900/40 rounded-xl border border-white/5">
-                {currentState ? (
-                     <div className="text-center z-10 absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-950/80 backdrop-blur-sm p-8">
-                       <h3 className="text-3xl font-black text-blue-400 font-manrope">Step {currentState.step} / {steps.length}</h3>
-                       <div className="flex gap-4 mt-4">
-                           <div className={`px-6 py-3 rounded-2xl border ${currentState.action === 'assign' ? 'border-blue-500 bg-blue-500/10' : currentState.action === 'backtrack' ? 'border-red-500 bg-red-500/10' : currentState.action === 'forward_check_prune' ? 'border-amber-500 bg-amber-500/10' : 'border-green-500 bg-green-500/10'}`}>
-                               <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-1">Action</span>
-                               <span className={`text-xl font-bold ${currentState.action === 'assign' ? 'text-blue-400' : currentState.action === 'backtrack' ? 'text-red-400' : currentState.action === 'forward_check_prune' ? 'text-amber-400' : 'text-green-400'}`}>
-                                   {currentState.action.replace(/_/g, ' ')}
-                               </span>
-                           </div>
-                           <div className="px-6 py-3 rounded-2xl border border-white/10 bg-white/5">
-                               <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-1">Variable</span>
-                               <span className="text-xl font-bold text-white">{currentState.current_variable || 'N/A'}</span>
-                           </div>
-                           <div className="px-6 py-3 rounded-2xl border border-white/10 bg-white/5">
-                               <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-1">Value Assigned</span>
-                               <span className="text-xl font-bold text-white">{currentState.assigned_value || 'N/A'}</span>
-                           </div>
+              {/* 3D or 2D Visualization */}
+              {is3DMode ? (
+                <div className="w-full h-full rounded-xl overflow-hidden border border-white/5">
+                  <CSP3DVisualization
+                    currentState={currentState}
+                    conflictSet={currentState ? Object.entries(currentState.conflict_set || {}) : []}
+                    assignments={assignments}
+                    steps={steps}
+                    currentStepIndex={currentStepIndex}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center relative overflow-hidden bg-slate-900/40 rounded-xl border border-white/5">
+                  {currentState ? (
+                       <div className="text-center z-10 absolute inset-0 flex flex-col items-center justify-center gap-4 bg-slate-950/80 backdrop-blur-sm p-8">
+                         <h3 className="text-3xl font-black text-blue-400 font-manrope">Step {currentState.step} / {steps.length}</h3>
+                         <div className="flex gap-4 mt-4">
+                             <div className={`px-6 py-3 rounded-2xl border ${currentState.action === 'assign' ? 'border-blue-500 bg-blue-500/10' : currentState.action === 'backtrack' ? 'border-red-500 bg-red-500/10' : currentState.action === 'forward_check_prune' ? 'border-amber-500 bg-amber-500/10' : 'border-green-500 bg-green-500/10'}`}>
+                                 <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-1">Action</span>
+                                 <span className={`text-xl font-bold ${currentState.action === 'assign' ? 'text-blue-400' : currentState.action === 'backtrack' ? 'text-red-400' : currentState.action === 'forward_check_prune' ? 'text-amber-400' : 'text-green-400'}`}>
+                                     {currentState.action.replace(/_/g, ' ')}
+                                 </span>
+                             </div>
+                             <div className="px-6 py-3 rounded-2xl border border-white/10 bg-white/5">
+                                 <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-1">Variable</span>
+                                 <span className="text-xl font-bold text-white">{currentState.current_variable || 'N/A'}</span>
+                             </div>
+                             <div className="px-6 py-3 rounded-2xl border border-white/10 bg-white/5">
+                                 <span className="text-xs uppercase tracking-widest font-black text-slate-500 block mb-1">Value Assigned</span>
+                                 <span className="text-xl font-bold text-white">{currentState.assigned_value || 'N/A'}</span>
+                             </div>
+                         </div>
                        </div>
-                     </div>
-                ) : (
-                    <div className="text-center text-slate-500 font-medium">Click "Start CSP Solver" to begin algorithm tracing.</div>
-                )}
-              </div>
+                  ) : (
+                      <div className="text-center text-slate-500 font-medium">Click "Start CSP Solver" to begin algorithm tracing.</div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

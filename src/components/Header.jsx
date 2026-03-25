@@ -11,11 +11,7 @@ export function Header({ title }) {
         </nav>
       </div>
       <div className="flex items-center gap-6">
-        <div className="relative group">
-          <span className="material-symbols-outlined text-slate-400 hover:text-blue-400 cursor-pointer transition-colors">notifications</span>
-          <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-        </div>
-        <span className="material-symbols-outlined text-slate-400 hover:text-blue-400 cursor-pointer transition-colors">help_outline</span>
+        <a href="https://github.com/RainboeStrykr/uniplan"><span className="material-symbols-outlined text-slate-400 hover:text-blue-400 cursor-pointer transition-colors">link</span></a>
         <img 
           alt="User Profile" 
           className="w-8 h-8 rounded-full border-2 border-blue-900" 

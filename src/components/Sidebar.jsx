@@ -41,17 +41,10 @@ export function Sidebar() {
         </nav>
         
         <div className="mt-auto flex flex-col gap-1 border-t border-white/5 pt-4">
-          <button className="bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded-xl font-bold flex items-center justify-center gap-2 mb-4 transition-colors shadow-lg shadow-blue-900/20">
-            <span className="material-symbols-outlined text-sm">auto_awesome</span>
-            Generate Schedule
-          </button>
+          
           <a className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-blue-400 transition-colors" href="#">
             <span className="material-symbols-outlined">menu_book</span>
             <span>Documentation</span>
-          </a>
-          <a className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-blue-400 transition-colors" href="#">
-            <span className="material-symbols-outlined">settings</span>
-            <span>Settings</span>
           </a>
         </div>
       </div>
