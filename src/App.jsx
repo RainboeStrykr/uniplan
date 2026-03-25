@@ -4,6 +4,7 @@ import ConflictResolution from './pages/ConflictResolution';
 import PerformanceAnalytics from './pages/PerformanceAnalytics';
 import TimetableOutput from './pages/TimetableOutput';
 import AlgorithmVisualisation from './pages/AlgorithmVisualisation';
+import Documentation from './pages/Documentation';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/analytics" element={<PerformanceAnalytics />} />
         <Route path="/results" element={<TimetableOutput />} />
         <Route path="/visualiser" element={<AlgorithmVisualisation />} />
+        <Route path="/docs" element={<Documentation />} />
       </Routes>
     </Router>
   );

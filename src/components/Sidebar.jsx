@@ -6,6 +6,7 @@ const navItems = [
   { path: '/visualiser', icon: 'account_tree', label: 'Visualiser' },
   { path: '/results', icon: 'fact_check', label: 'Results' },
   { path: '/analytics', icon: 'analytics', label: 'Analytics' },
+  { path: '/docs', icon: 'menu_book', label: 'Documentation' },
 ];
 
 export function Sidebar() {
@@ -41,11 +42,6 @@ export function Sidebar() {
         </nav>
         
         <div className="mt-auto flex flex-col gap-1 border-t border-white/5 pt-4">
-          
-          <a className="flex items-center gap-3 px-4 py-2 text-slate-500 hover:text-blue-400 transition-colors" href="#">
-            <span className="material-symbols-outlined">menu_book</span>
-            <span>Documentation</span>
-          </a>
         </div>
       </div>
     </aside>
