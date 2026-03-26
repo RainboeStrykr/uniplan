@@ -113,6 +113,9 @@ export default function InputManagement() {
                 onClick={() => setActiveTab('rooms')}
                 className={`px-6 py-2 font-bold transition-colors ${activeTab === 'rooms' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-400 hover:text-blue-400'}`}>Rooms</button>
               <button 
+                onClick={() => setActiveTab('time_slots')}
+                className={`px-6 py-2 font-bold transition-colors ${activeTab === 'time_slots' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-400 hover:text-blue-400'}`}>Time Slots</button>
+              <button 
                 onClick={() => setActiveTab('student_groups')}
                 className={`px-6 py-2 font-bold transition-colors ${activeTab === 'student_groups' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-400 hover:text-blue-400'}`}>Student Groups</button>
             </div>
@@ -175,6 +178,14 @@ export default function InputManagement() {
                             <th className="px-4 pb-2">Size</th>
                             <th className="px-4 pb-2">Courses</th>
                           </>
+                        )}
+                        {activeTab === 'time_slots' && (
+                          <>
+                            <th className="px-4 pb-2">Slot ID</th>
+                            <th className="px-4 pb-2">Day</th>
+                            <th className="px-4 pb-2">Start Time</th>
+                            <th className="px-4 pb-2">End Time</th>
+                          </>
                         )}                      </tr>
                     </thead>
                     <tbody className="space-y-2">
@@ -211,6 +222,14 @@ export default function InputManagement() {
                           <td className="px-4 py-4 text-slate-300">{sg.name}</td>
                           <td className="px-4 py-4 text-slate-400">{sg.size} students</td>
                           <td className="px-4 py-4 text-slate-400 rounded-r-xl text-xs">{(sg.course_ids || []).join(', ')}</td>
+                        </tr>
+                      ))}
+                      {activeTab === 'time_slots' && resources.time_slots.map(ts => (
+                        <tr key={ts.id} className="bg-slate-900/50 border border-white/5 hover:bg-slate-900 transition-colors group">
+                          <td className="px-4 py-4 font-bold text-blue-300 rounded-l-xl">{ts.id}</td>
+                          <td className="px-4 py-4 text-slate-300">{ts.day}</td>
+                          <td className="px-4 py-4 text-slate-400">{ts.start_time}</td>
+                          <td className="px-4 py-4 text-slate-400 rounded-r-xl">{ts.end_time}</td>
                         </tr>
                       ))}
                     </tbody>

@@ -4,6 +4,7 @@ import { Layout } from '../components/Layout';
 export default function TimetableOutput() {
   const [timetable, setTimetable] = useState([]);
   const [metrics, setMetrics] = useState(null);
+  const [conflicts, setConflicts] = useState([]);
   
   useEffect(() => {
     fetchTimetable();
@@ -15,6 +16,35 @@ export default function TimetableOutput() {
       const res = await fetch('http://127.0.0.1:8000/api/timetable/');
       const data = await res.json();
       setTimetable(data.timetable || []);
+      
+      // Detect conflicts
+      const detectedConflicts = [];
+      const timeGroups = {};
+      
+      data.timetable?.forEach(item => {
+        const day = item.time_slot?.day;
+        const startTime = item.time_slot?.start_time;
+        const key = `${day}-${startTime}`;
+        if (!timeGroups[key]) timeGroups[key] = [];
+        timeGroups[key].push(item);
+        
+        // Check for conflicts (same room, same time)
+        const sameTimeSlots = timeGroups[key];
+        if (sameTimeSlots.length > 1) {
+          const rooms = sameTimeSlots.map(s => s.room?.id);
+          const uniqueRooms = [...new Set(rooms)];
+          if (uniqueRooms.length < sameTimeSlots.length) {
+            detectedConflicts.push({
+              time: key,
+              day: day,
+              startTime: startTime,
+              items: sameTimeSlots
+            });
+          }
+        }
+      });
+      
+      setConflicts(detectedConflicts);
     } catch {}
   };
 
@@ -33,6 +63,11 @@ export default function TimetableOutput() {
   const GRID_HOURS = Array.from({ length: TOTAL_HOURS }, (_, i) => `${String(HOUR_START + i).padStart(2, '0')}:00`);
 
   const dayColMap = {
+    'M': 0,  // Monday
+    'T': 1,  // Tuesday  
+    'W': 2,  // Wednesday
+    'R': 3,  // Thursday
+    'F': 4,  // Friday
     'Monday': 0,
     'Tuesday': 1,
     'Wednesday': 2,
@@ -76,7 +111,7 @@ export default function TimetableOutput() {
     URL.revokeObjectURL(url);
   };
 
-  const qualityScore = metrics && metrics.nodes_expanded > 0 ? 100 : 0;
+  const qualityScore = metrics && metrics.nodes_expanded > 0 ? (conflicts.length === 0 ? 100 : Math.max(0, 100 - (conflicts.length * 20))) : 0;
 
   return (
     <Layout title="Timetable Output Hub">
@@ -132,10 +167,24 @@ export default function TimetableOutput() {
                   {(() => {
                     // Group by day+time to detect true overlaps
                     const timeGroups = {};
+                    const conflicts = [];
+                    
                     timetable.forEach(item => {
-                      const key = `${item.time_slot?.day}-${item.time_slot?.start_time}`;
+                      const day = item.time_slot?.day;
+                      const startTime = item.time_slot?.start_time;
+                      const key = `${day}-${startTime}`;
                       if (!timeGroups[key]) timeGroups[key] = [];
                       timeGroups[key].push(item);
+                      
+                      // Check for conflicts (same room, same time)
+                      const sameTimeSlots = timeGroups[key];
+                      if (sameTimeSlots.length > 1) {
+                        const rooms = sameTimeSlots.map(s => s.room?.id);
+                        const uniqueRooms = [...new Set(rooms)];
+                        if (uniqueRooms.length < sameTimeSlots.length) {
+                          conflicts.push({time: key, items: sameTimeSlots});
+                        }
+                      }
                     });
 
                     const colors = [
@@ -144,6 +193,7 @@ export default function TimetableOutput() {
                       'border-cyan-500 bg-cyan-500/10 text-cyan-100',
                       'border-purple-500 bg-purple-500/10 text-purple-100',
                       'border-emerald-500 bg-emerald-500/10 text-emerald-100',
+                      'border-red-500 bg-red-500/10 text-red-100', // for conflicts
                     ];
 
                     return timetable.map((item, idx) => {
@@ -155,10 +205,16 @@ export default function TimetableOutput() {
                       const group = timeGroups[key];
                       const overlapCount = group.length;
                       const overlapIndex = group.findIndex(g => g.session_id === item.session_id);
+                      
+                      // Check if this item is in conflict
+                      const isConflict = conflicts.some(c => c.time === key && c.items.some(i => i.session_id === item.session_id));
 
                       const topPct = getTopPercent(item.time_slot.start_time);
                       const heightPct = getHeightPercent(item.course?.duration);
-                      const colorCls = colors[idx % colors.length];
+                      let colorCls = colors[idx % (colors.length - 1)]; // exclude red color
+                      if (isConflict) {
+                        colorCls = colors[5]; // red for conflicts
+                      }
 
                       // Each day column occupies (100% - 80px) / 5 of width
                       // Within that column, split by overlap
@@ -168,18 +224,21 @@ export default function TimetableOutput() {
 
                       return (
                         <div key={item.session_id}
-                          className="absolute z-10 px-0.5"
+                          className={`absolute z-10 px-0.5 ${isConflict ? 'z-20' : ''}`}
                           style={{
                             top: `${topPct}%`,
                             height: `${heightPct}%`,
                             left: `calc(${leftExpr})`,
                             width: `calc(${widthExpr})`,
                           }}>
-                          <div className={`border-l-4 h-full rounded-lg p-2 overflow-hidden hover:brightness-125 transition-all ${colorCls}`}>
+                          <div className={`border-l-4 h-full rounded-lg p-2 overflow-hidden hover:brightness-125 transition-all ${colorCls} ${isConflict ? 'animate-pulse border-2' : ''}`}>
                             <p className="text-[11px] font-bold leading-tight truncate">{item.course?.name}</p>
                             <p className="text-[10px] font-bold text-slate-400 truncate">{item.course?.id}</p>
                             <p className="text-[9px] mt-1 opacity-70 truncate">{item.professor?.name}</p>
                             <p className="text-[9px] opacity-70 truncate">{item.room?.name}</p>
+                            {isConflict && (
+                              <p className="text-[8px] mt-1 text-red-400 font-bold">⚠️ CONFLICT</p>
+                            )}
                           </div>
                         </div>
                       );
@@ -199,18 +258,51 @@ export default function TimetableOutput() {
           </div>
 
           <div className="col-span-12 lg:col-span-3 space-y-6">
-            <div className="bg-blue-600 text-white p-6 rounded-xl shadow-lg relative overflow-hidden">
+            {conflicts.length > 0 && (
+              <div className="bg-red-900/50 border border-red-800/50 rounded-xl p-6 space-y-4">
+                <h3 className="font-manrope font-bold text-red-400 flex items-center gap-2">
+                  <span className="material-symbols-outlined">warning</span>
+                  Schedule Conflicts ({conflicts.length})
+                </h3>
+                <div className="space-y-3">
+                  {conflicts.map((conflict, idx) => (
+                    <div key={idx} className="bg-red-950/50 rounded-lg p-3 border border-red-800/30">
+                      <div className="text-sm font-bold text-red-300 mb-2">
+                        {conflict.day} {conflict.startTime}
+                      </div>
+                      <div className="space-y-1">
+                        {conflict.items.map((item, i) => (
+                          <div key={i} className="text-xs text-slate-300">
+                            • {item.course?.id} - {item.room?.name}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-red-400">
+                  ⚠️ Multiple classes scheduled in the same room at the same time
+                </p>
+              </div>
+            )}
+
+            <div className={`text-white p-6 rounded-xl shadow-lg relative overflow-hidden ${conflicts.length > 0 ? 'bg-orange-600' : 'bg-blue-600'}`}>
               <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-              <h3 className="text-sm font-manrope font-bold uppercase tracking-widest text-blue-200 mb-4">Solution Quality</h3>
+              <h3 className="text-sm font-manrope font-bold uppercase tracking-widest text-white/80 mb-4">Solution Quality</h3>
               <div className="space-y-6">
                 <div>
                   <div className="flex justify-between items-end mb-2">
-                    <span className="text-xs font-medium text-blue-100 font-body">Hard Constraints</span>
+                    <span className="text-xs font-medium text-white/90 font-body">Hard Constraints</span>
                     <span className="text-2xl font-manrope font-black">{qualityScore}%</span>
                   </div>
                   <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
                     <div className="bg-white h-full transition-all" style={{width: `${qualityScore}%`}}></div>
                   </div>
+                  {conflicts.length > 0 && (
+                    <p className="text-xs text-white/70 mt-2">
+                      {conflicts.length} conflict{conflicts.length > 1 ? 's' : ''} detected
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

@@ -34,6 +34,8 @@ try:
     post_csv("courses", "demo_courses.csv")
     post_csv("professors", "demo_professors.csv")
     post_csv("rooms", "demo_rooms.csv")
+    post_csv("student_groups", "demo_student_groups.csv")
+    post_csv("time_slots", "demo_time_slots.csv")
     solve()
     get_timetable()
 except Exception as e:

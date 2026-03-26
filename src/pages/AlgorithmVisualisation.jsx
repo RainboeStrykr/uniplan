@@ -9,6 +9,7 @@ export default function AlgorithmVisualisation() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSolving, setIsSolving] = useState(false);
   const [is3DMode, setIs3DMode] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
   
   const timerRef = useRef(null);
 
@@ -20,6 +21,22 @@ export default function AlgorithmVisualisation() {
           setMetrics(data);
       }
     } catch {}
+  };
+
+  const handle3DModeToggle = () => {
+    const new3DMode = !is3DMode;
+    setIs3DMode(new3DMode);
+    
+    // Auto-enter fullscreen when switching to 3D mode
+    if (new3DMode) {
+      setIsFullScreen(true);
+    } else {
+      setIsFullScreen(false);
+    }
+  };
+
+  const handleFullScreenToggle = () => {
+    setIsFullScreen(!isFullScreen);
   };
 
   const handleSolve = async () => {
@@ -69,35 +86,68 @@ export default function AlgorithmVisualisation() {
 
   return (
     <Layout title="Algorithm Visualisation Dashboard">
-      <div className="mt-[60px] p-6 grid grid-cols-12 gap-6 h-[calc(100vh-60px)]">
-        <section className="col-span-9 flex flex-col gap-6">
-          <div className="flex-1 bg-surface-container-low/30 rounded-2xl relative overflow-hidden flex flex-col border border-outline-variant/10">
-            <div className="p-6 flex justify-between items-start z-10">
-              <div>
-                <h2 className="font-headline font-bold text-xl text-blue-100">Solver Engine</h2>
-                <p className="text-sm text-slate-500">Real-time CSP state exploration</p>
-              </div>
-              <div className="flex gap-4 items-center">
-                {isSolving ? (
-                    <span className="text-blue-400 font-bold animate-pulse text-sm">Engine Running...</span>
-                ) : (
-                    <>
-                        <button 
-                          onClick={() => setIs3DMode(!is3DMode)} 
-                          className="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold hover:bg-purple-500 text-sm"
-                        >
-                          {is3DMode ? '2D View' : '3D View'}
-                        </button>
-                        <button onClick={() => setIsPlaying(!isPlaying)} disabled={steps.length === 0} className="px-4 py-2 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-700 disabled:opacity-50 text-sm">
-                            {isPlaying ? 'Pause Playback' : (steps.length > 0 ? 'Resume Playback' : 'Waiting')}
-                        </button>
-                        <button onClick={handleSolve} className="px-6 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 shadow-lg shadow-blue-900/20">
-                            Start CSP Solver
-                        </button>
-                    </>
-                )}
-              </div>
+      <div className={`mt-[60px] ${isFullScreen ? 'p-0' : 'p-6'} ${isFullScreen ? 'h-screen' : 'grid grid-cols-12 gap-6 h-[calc(100vh-60px)]'}`}>
+        {isFullScreen ? (
+          // Full screen 3D mode
+          <div className="relative w-full h-full">
+            {/* Full screen controls */}
+            <div className="absolute top-4 right-4 z-20 flex gap-2">
+              <button 
+                onClick={handleFullScreenToggle}
+                className="px-3 py-2 bg-slate-900/80 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-slate-800/80 text-sm font-bold"
+              >
+                <span className="material-symbols-outlined text-lg">fullscreen_exit</span>
+              </button>
+              <button 
+                onClick={handle3DModeToggle}
+                className="px-3 py-2 bg-slate-900/80 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-slate-800/80 text-sm font-bold"
+              >
+                2D View
+              </button>
             </div>
+            
+            {/* 3D Visualization */}
+            <div className="w-full h-full">
+              <CSP3DVisualization
+                currentState={currentState}
+                conflictSet={currentState ? Object.entries(currentState.conflict_set || {}) : []}
+                assignments={assignments}
+                steps={steps}
+                currentStepIndex={currentStepIndex}
+              />
+            </div>
+          </div>
+        ) : (
+          // Normal layout
+          <>
+            <section className="col-span-9 flex flex-col gap-6">
+              <div className="flex-1 bg-surface-container-low/30 rounded-2xl relative overflow-hidden flex flex-col border border-outline-variant/10">
+                <div className="p-6 flex justify-between items-start z-10">
+                  <div>
+                    <h2 className="font-headline font-bold text-xl text-blue-100">Solver Engine</h2>
+                    <p className="text-sm text-slate-500">Real-time CSP state exploration</p>
+                  </div>
+                  <div className="flex gap-4 items-center">
+                    {isSolving ? (
+                        <span className="text-blue-400 font-bold animate-pulse text-sm">Engine Running...</span>
+                    ) : (
+                        <>
+                            <button 
+                              onClick={handle3DModeToggle} 
+                              className="px-4 py-2 rounded-lg bg-purple-600 text-white font-bold hover:bg-purple-500 text-sm"
+                            >
+                              {is3DMode ? '2D View' : '3D View'}
+                            </button>
+                            <button onClick={() => setIsPlaying(!isPlaying)} disabled={steps.length === 0} className="px-4 py-2 rounded-lg bg-slate-800 text-white font-bold hover:bg-slate-700 disabled:opacity-50 text-sm">
+                                {isPlaying ? 'Pause Playback' : (steps.length > 0 ? 'Resume Playback' : 'Waiting')}
+                            </button>
+                            <button onClick={handleSolve} className="px-6 py-2 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-500 shadow-lg shadow-blue-900/20">
+                                Start CSP Solver
+                            </button>
+                        </>
+                    )}
+                  </div>
+                </div>
 
             <div className="flex-1 relative p-8 flex items-center justify-center">
               {/* 3D or 2D Visualization */}
@@ -199,7 +249,8 @@ export default function AlgorithmVisualisation() {
             </div>
           </div>
         </aside>
-
+          </>
+        )}
       </div>
     </Layout>
   );

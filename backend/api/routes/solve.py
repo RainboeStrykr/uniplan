@@ -18,6 +18,27 @@ def solve_timetable(heuristics: List[str] = ["mrv", "mcv", "lcv"], store: Dict[s
         time_slots = store["time_slots"]
         student_groups = store["student_groups"]
         
+        # Validate that we have all required resources
+        if not courses:
+            return {"error": "No courses found. Please upload course data first."}
+        if not professors:
+            return {"error": "No professors found. Please upload professor data first."}
+        if not rooms:
+            return {"error": "No rooms found. Please upload room data first."}
+        if not time_slots:
+            return {"error": "No time slots found. Please upload time slot data first."}
+        if not student_groups:
+            return {"error": "No student groups found. Please upload student group data first."}
+        
+        # Validate that courses reference existing professors and student groups
+        for course_id, course_data in courses.items():
+            if course_data.get("professor_id") not in professors:
+                return {"error": f"Course {course_id} references non-existent professor {course_data.get('professor_id')}"}
+            
+            for group_id in course_data.get("student_group_ids", []):
+                if group_id not in student_groups:
+                    return {"error": f"Course {course_id} references non-existent student group {group_id}"}
+        
         sessions = {}
         for c_id, course_data in courses.items():
             s_id = f"{c_id}_s1"
@@ -52,7 +73,8 @@ def solve_timetable(heuristics: List[str] = ["mrv", "mcv", "lcv"], store: Dict[s
         return {
             "status": "success" if solution else "failed",
             "nodes_expanded": metrics.nodes_expanded,
-            "time_taken_ms": metrics.time_taken_ms
+            "time_taken_ms": metrics.time_taken_ms,
+            "message": "Solution found successfully!" if solution else "No solution found - try adding more resources or relaxing constraints"
         }
     except Exception as e:
         return {"error": str(e), "traceback": traceback.format_exc()}
@@ -67,3 +89,12 @@ def get_visualization_step(step_index: int, store: Dict[str, Any] = Depends(get_
     if 0 <= step_index < len(steps):
         return steps[step_index]
     return {"error": "Step not found"}
+
+@router.get("/performance/metrics")
+def get_performance_metrics(store: Dict[str, Any] = Depends(get_store)):
+    return store["latest_metrics"] or {
+        "nodes_expanded": 0,
+        "backtrack_count": 0,
+        "time_taken_ms": 0,
+        "heuristic_used": "none"
+    }

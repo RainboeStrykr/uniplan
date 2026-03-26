@@ -1,0 +1,7 @@
+id,name,capacity,type
+R101,Lecture Hall A,80,Lecture
+R102,Lecture Hall B,50,Lecture
+R103,Computer Lab 1,25,Lab
+R104,Computer Lab 2,20,Lab
+R105,Seminar Room,15,Seminar
+R106,Conference Room,10,Seminar

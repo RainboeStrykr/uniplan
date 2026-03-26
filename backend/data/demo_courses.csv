@@ -1,0 +1,9 @@
+id,name,duration,type,professor_id,student_group_ids
+CS101,Introduction to Computer Science,1.0,Lecture,P1,"G1,G2"
+CS102,Data Structures,1.5,Lecture,P2,"G1,G3"
+CS201,Algorithms,2.0,Lecture,P1,"G2,G3"
+CS202,Database Systems,1.0,Lecture,P3,"G1,G2"
+CS301,Machine Learning,2.0,Lecture,P2,"G3"
+MATH101,Calculus I,1.0,Lecture,P4,"G1,G2,G3"
+MATH102,Linear Algebra,1.5,Lecture,P5,"G2,G3"
+ENG101,Technical Writing,1.0,Lecture,P6,"G1,G3"

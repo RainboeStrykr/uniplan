@@ -1,0 +1,4 @@
+id,name,size,course_ids
+G1,Computer Science Year 1,30,"CS101,MATH101,ENG101"
+G2,Computer Science Year 2,25,"CS102,CS202,MATH102"
+G3,Computer Science Year 3,20,"CS201,CS301,MATH102"

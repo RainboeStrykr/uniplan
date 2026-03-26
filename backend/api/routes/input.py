@@ -75,6 +75,8 @@ def upload_csv(upload: CSVUpload, store: Dict[str, Any] = Depends(get_store)):
             return {"error": "Invalid CSV for Rooms. Missing 'capacity' column."}
         if rtype == "student_groups" and "size" not in reader.fieldnames:
             return {"error": "Invalid CSV for Student Groups. Missing 'size' column."}
+        if rtype == "time_slots" and ("day" not in reader.fieldnames or "start_time" not in reader.fieldnames or "end_time" not in reader.fieldnames):
+            return {"error": "Invalid CSV for Time Slots. Missing 'day', 'start_time', or 'end_time' columns."}
 
         count = 0
         for row in reader:
