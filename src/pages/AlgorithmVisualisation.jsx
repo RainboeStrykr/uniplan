@@ -92,6 +92,27 @@ export default function AlgorithmVisualisation() {
           <div className="relative w-full h-full">
             {/* Full screen controls */}
             <div className="absolute top-4 right-4 z-20 flex gap-2">
+              {isSolving ? (
+                <span className="px-3 py-2 bg-blue-600/80 backdrop-blur-sm text-white rounded-lg border border-white/20 text-sm font-bold animate-pulse">
+                  Engine Running...
+                </span>
+              ) : (
+                <>
+                  <button 
+                    onClick={() => setIsPlaying(!isPlaying)} 
+                    disabled={steps.length === 0} 
+                    className="px-3 py-2 bg-slate-900/80 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-slate-800/80 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isPlaying ? 'Pause' : (steps.length > 0 ? 'Play' : 'Start')}
+                  </button>
+                  <button 
+                    onClick={handleSolve} 
+                    className="px-3 py-2 bg-blue-600/80 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-blue-500/80 text-sm font-bold"
+                  >
+                    Solve
+                  </button>
+                </>
+              )}
               <button 
                 onClick={handleFullScreenToggle}
                 className="px-3 py-2 bg-slate-900/80 backdrop-blur-sm text-white rounded-lg border border-white/20 hover:bg-slate-800/80 text-sm font-bold"
