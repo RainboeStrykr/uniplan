@@ -130,7 +130,7 @@ UniPlan features an advanced 3D visualization system for understanding the CSP s
 ### Getting Started
 1. **Navigate to Input Management**: Add courses, professors, rooms, and timeslots
 
-> Refer to [DATSETS_UPLOAD_GUIDE](DATASETS_UPLOAD_GUIDE.md) for demo datasets
+> Refer to [DATASETS_UPLOAD_GUIDE](DATASETS_UPLOAD_GUIDE.md) for demo datasets
 
 2. **Create Course Sessions**: Define individual class sessions with requirements
 3. **Run Solver**: Start the CSP algorithm to generate timetable
