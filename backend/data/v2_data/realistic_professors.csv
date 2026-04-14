@@ -1,0 +1,11 @@
+id,name,unavailable_slots
+P1,Dr. Smith,"M12,M13,M14"
+P2,Dr. Johnson,"T12,T13,T14"
+P3,Dr. Williams,"W12,W13,W14"
+P4,Dr. Brown,"R12,R13,R14"
+P5,Dr. Davis,"F12,F13,F14"
+P6,Dr. Miller,"M15,T15,W15"
+P7,Dr. Anderson,"T13,T14"
+P8,Dr. Thomas,"W13,W14"
+P9,Dr. Jackson,"R13,R14"
+P10,Dr. White,""
