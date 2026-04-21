@@ -2,7 +2,7 @@
 
 UniPlan is a modern, full-stack university timetable scheduling application. It uses a **Constraint Satisfaction Problem (CSP)** engine built in Python to automatically resolve complex scheduling variables—like room capacities, lecturer overlap, and student group conflicts—and pairs it with a beautiful, interactive **React** Frontend with advanced 2D/3D visualizations.
 
-[Academic Poster](research_poster.pdf)
+**[Demo](https://drive.google.com/file/d/1c4lwFYpwmgaNzOOLoku4CMiqEaaZATSP/view?usp=sharing)**
 
 ## ✨ Features
 - **CSP Algorithm Engine**: Python backend wielding Backtracking, Forward Checking, and Advanced Heuristics (MRV, MCV, LCV).
@@ -173,7 +173,9 @@ The backend exposes a REST API at `http://127.0.0.1:8000`
 
 ## 📚 Documentation
 
-For detailed information about the system architecture, algorithm implementation, and advanced usage, visit the built-in **Documentation** page in the application or check the `/src/pages/Documentation.jsx` file.
+For detailed information about the system architecture, algorithm implementation, and advanced usage, visit the built-in **Documentation** page in the application or check the `/src/pages/Documentation.jsx` file. 
+
+Check out the [academic poster](research_poster.pdf) to know more on the theoretical side.
 
 ---
 
